@@ -1,0 +1,26 @@
+#!/usr/bin/ruby
+
+
+## defaults
+
+size = "m1.small"
+require 'rubygems'
+require 'optiflag'
+
+ module DBChecker extend OptiFlagSet
+   flag "role"
+   optional_flag "size"
+   
+   and_process!
+ end 
+if ARGV.flags.size?
+  size = ARGV.flags.size
+end
+
+#`knife ec2 server create "role[#{role}]" -i ami-1234de7b -g demo-web -x ubuntu -S test1 -f #{size} -I ~/.chef/test1.pem`
+puts "knife ec2 server create 'role[#{ARGV.flags.role}]' -i ami-1234de7b -g demo-web -x ubuntu -S test1 -f #{size} -I ~/.chef/test1.pem"
+puts "Is this correct?[y/n]"
+a = $stdin.gets.chomp
+if a == "y"
+	system("knife ec2 server create 'role[#{ARGV.flags.role}]' -i ami-1234de7b -g demo-web -x ubuntu -S test1 -f #{ARGV.flags.size} -I ~/.chef/test1.pem")
+end
