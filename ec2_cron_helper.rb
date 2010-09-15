@@ -3,16 +3,16 @@ require 'json'
 
 json = `knife client list`
 client_list = JSON.parse(json)
-puts client_list
+#puts client_list
 #ec2_list = `knife ec2 server list|awk '{print $1 " " $7}'`
 list = `knife ec2 server list`
 list = list.to_a[2..-1].join
-ec2_list = []
+ec2_list = {}
 for l in list
 	l.chop!
 	a = l.split()
-	puts a[0],a.last()
-	ec2_list << [a[0],a.last()]
+	#puts a[0],a.last()
+	ec2_list[a[0]] = a.last()
 end
 #puts "\nEC2_list"
 #puts ec2_list
@@ -22,19 +22,27 @@ running = []
 stopped = []
 stopping = []
 terminated = []
-for a in ec2_list
-	id, state = a
-	puts "Instance ID: #{id} Ec2 State: #{state}"
-	if client_list.grep(id)
+unknown = []
+not_found = []
+for id in client_list
+	next unless id =~ /^i-/
+	#puts "Instance ID: #{id}"
+	if ec2_list.has_key?(id)
+		state = ec2_list[id]
 		if state == "running"
 			running << id
 		elsif state == "shutting-down"
 			stopping << id
 		elsif state == "terminated"
 			terminated << id
-		else
+		elsif state == "stopped"
 			stopped << id
+		else
+			unknown << id
 		end
+	else
+		not_found << id
+		#print "#"
 	end
 end
 
@@ -46,5 +54,11 @@ end
 puts "\nTerminated Instances: #{terminated.count} out of #{client_list.count} Chef clients"
 for i in terminated
 	puts "\t#{i}"
-	system("knife ec2 server delete #{i}")
+	system("knife client delete #{i}")
 end
+puts "\nNot Found Instances: #{not_found.count} out of #{client_list.count} Chef clients"
+for i in not_found
+        puts "\t#{i}"
+        system("knife client delete #{i}")
+end
+puts "\nUnknown Instances: #{unknown.count} out of #{client_list.count} Chef clients"
