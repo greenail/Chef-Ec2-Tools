@@ -6,6 +6,7 @@ require 'optiflag'
  module DBChecker extend OptiFlagSet
    #flag "role"
    optional_switch_flag "dry"
+   optional_switch_flag "yes"
 
    and_process!
  end
@@ -25,6 +26,12 @@ for l in list
 end
 #puts "\nEC2_list"
 #puts ec2_list
+
+# add non-interactive mode if yes flag is active
+
+knife_args = ""
+knife_args = "-y" if yes
+
 
 puts "\nParsing..."
 running = []
@@ -63,11 +70,11 @@ end
 puts "\nTerminated Instances: #{terminated.count} out of #{client_list.count} Chef clients"
 for i in terminated
 	puts "\t#{i}"
-	system("knife client delete #{i}") unless dry
+	system("knife client delete #{i} #{knife_args}") unless dry
 end
 puts "\nNot Found Instances: #{not_found.count} out of #{client_list.count} Chef clients"
 for i in not_found
         puts "\t#{i}"
-        system("knife client delete #{i}") unless dry
+        system("knife client delete #{i} #{knife_args}") unless dry
 end
 puts "\nUnknown Instances: #{unknown.count} out of #{client_list.count} Chef clients"
