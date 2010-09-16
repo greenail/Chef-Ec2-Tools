@@ -18,9 +18,10 @@ if ARGV.flags.size?
 end
 
 #`knife ec2 server create "role[#{role}]" -i ami-1234de7b -g demo-web -x ubuntu -S test1 -f #{size} -I ~/.chef/test1.pem`
-puts "knife ec2 server create 'role[#{ARGV.flags.role}]' -i ami-1234de7b -g demo-web -x ubuntu -S test1 -f #{size} -I ~/.chef/test1.pem"
+knife_command = "knife ec2 server create 'role[#{ARGV.flags.role}]' -i ami-1234de7b -g demo-web -x ubuntu -S test1 -f #{size} -I ~/.chef/test1.pem -d ubuntu10.04-apt"
+puts knife_command
 puts "Is this correct?[y/n]"
 a = $stdin.gets.chomp
 if a == "y"
-	system("knife ec2 server create 'role[#{ARGV.flags.role}]' -i ami-1234de7b -g demo-web -x ubuntu -S test1 -f #{ARGV.flags.size} -I ~/.chef/test1.pem")
+	system(knife_command)
 end
