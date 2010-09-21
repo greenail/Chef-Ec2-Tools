@@ -10,8 +10,9 @@ require 'optiflag'
  module DBChecker extend OptiFlagSet
    flag "role"
    optional_flag "size"
-   optional_flag "elb" 
+   optional_switch_flag "elb" 
    optional_flag "n"
+   optional_switch_flag "y"
    and_process!
  end 
 if ARGV.flags.size?
@@ -24,8 +25,13 @@ def launch_instances(args,size)
 	#`knife ec2 server create "role[#{role}]" -i ami-1234de7b -g demo-web -x ubuntu -S test1 -f #{size} -I ~/.chef/test1.pem`
 	knife_command = "knife ec2 server create 'role[#{args.flags.role}]' -i ami-1234de7b -g demo-web -x ubuntu -S test1 -f #{size} -I ~/.chef/test1.pem -d ubuntu10.04-apt"
 	puts knife_command
-	puts "Is this correct?[y/n]"
-	a = $stdin.gets.chomp
+	a = "n"
+	if args.flags.y 
+		a == "y"
+	else
+		puts "Is this correct?[y/n]"
+		a = $stdin.gets.chomp
+	end
 	if a == "y"
 		system(knife_command)
 	        if args.flags.elb
@@ -34,9 +40,13 @@ def launch_instances(args,size)
 	end
 end
 if args.flags.n
-        n.times {
-                launch_instances(args)
+        args.flags.n.to_i.times {
+                launch_instances(args,size)
                 }
 else
         launch_instances(args,size)
+end
+if args.flags.elb
+	puts "Ensuring ELB"
+	system("chef-client")
 end
