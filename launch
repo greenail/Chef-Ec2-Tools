@@ -10,18 +10,33 @@ require 'optiflag'
  module DBChecker extend OptiFlagSet
    flag "role"
    optional_flag "size"
-   
+   optional_flag "elb" 
+   optional_flag "n"
    and_process!
  end 
 if ARGV.flags.size?
   size = ARGV.flags.size
+else
+	#ARGV.flags.size = "m1.small"
 end
-
-#`knife ec2 server create "role[#{role}]" -i ami-1234de7b -g demo-web -x ubuntu -S test1 -f #{size} -I ~/.chef/test1.pem`
-knife_command = "knife ec2 server create 'role[#{ARGV.flags.role}]' -i ami-1234de7b -g demo-web -x ubuntu -S test1 -f #{size} -I ~/.chef/test1.pem -d ubuntu10.04-apt"
-puts knife_command
-puts "Is this correct?[y/n]"
-a = $stdin.gets.chomp
-if a == "y"
-	system(knife_command)
+args = ARGV
+def launch_instances(args,size)
+	#`knife ec2 server create "role[#{role}]" -i ami-1234de7b -g demo-web -x ubuntu -S test1 -f #{size} -I ~/.chef/test1.pem`
+	knife_command = "knife ec2 server create 'role[#{args.flags.role}]' -i ami-1234de7b -g demo-web -x ubuntu -S test1 -f #{size} -I ~/.chef/test1.pem -d ubuntu10.04-apt"
+	puts knife_command
+	puts "Is this correct?[y/n]"
+	a = $stdin.gets.chomp
+	if a == "y"
+		system(knife_command)
+	        if args.flags.elb
+          	      #system("elb-register-instances-with-lb #{args.flags.elb} --instances ")
+        	end
+	end
+end
+if args.flags.n
+        n.times {
+                launch_instances(args)
+                }
+else
+        launch_instances(args,size)
 end
