@@ -27,7 +27,7 @@ def launch_instances(args,size)
 	puts knife_command
 	a = "n"
 	if args.flags.y 
-		a == "y"
+		a = "y"
 	else
 		puts "Is this correct?[y/n]"
 		a = $stdin.gets.chomp
